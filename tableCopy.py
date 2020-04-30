@@ -16,12 +16,16 @@ global toCursor
 toConnection = None
 toCursor = None
 
+''' Two temporary files, simple program 
+    to simple just to do one '''
 tmpFile1 = f"{tempfile.gettempdir()}/tableCopyFrom.txt"
 tmpFile2 = f"{tempfile.gettempdir()}/tableCopyTo.txt"
 
 fromTMP = None
 toTMP = None
 
+''' Loads data from those temporary files
+    fromTMP from Database, toTMP to Database '''
 if os.path.exists(tmpFile1) == True:
     with open(tmpFile1) as f:
         thisList = list(f)
@@ -49,10 +53,13 @@ class Ui(QtWidgets.QMainWindow):
         self.show()
     
     def clear(self):
+        ''' self explanatory '''
         self.fromPlainTextEdit.clear()
         self.toPlainTextEdit.clear()
 
+    
     def fromDrop(self):
+        ''' drag 'n drop local file into QPlainText field and it loads '''
         self.fromPlainTextEdit.textChanged.disconnect()
         current = self.fromPlainTextEdit.toPlainText().replace("file://", "").strip()
         self.fromPlainTextEdit.setPlainText(f'{current}')
@@ -63,6 +70,7 @@ class Ui(QtWidgets.QMainWindow):
         self.fromPlainTextEdit.textChanged.connect(self.fromDrop)
 
     def toDrop(self):
+        ''' same as above but right side '''
         self.toPlainTextEdit.textChanged.disconnect()
         current = self.toPlainTextEdit.toPlainText().replace("file://", "").strip()
         self.toPlainTextEdit.setPlainText(f'{current}')
@@ -73,6 +81,7 @@ class Ui(QtWidgets.QMainWindow):
         self.toPlainTextEdit.textChanged.connect(self.toDrop)
 
     def loadFrom(self, current):
+        ''' once a file exists it loads their tables '''
         global fromConnection
         global fromCursor
         fromConnection = sqlite3.connect(current)
@@ -82,6 +91,8 @@ class Ui(QtWidgets.QMainWindow):
         self.printLists(data, self.fromList)
 
     def loadTo(self, current, reLoad=True):
+        ''' this could be integrated into method above, but ... 
+            reLoad argument for quick refresh after copy '''
         global toConnection
         global toCursor
         if reLoad == True:
@@ -92,6 +103,7 @@ class Ui(QtWidgets.QMainWindow):
         self.printLists(data, self.toList)
 
     def printLists(self, finals, printTo):
+        ''' prints tables onto screen in alphabetic order '''
         printTo.clear()
         finals.sort()
         for count, i in enumerate(finals):
@@ -101,10 +113,12 @@ class Ui(QtWidgets.QMainWindow):
                 item = listwidget.item(len(listwidget)-1)
 
     def fromListClicked(self):
+        ''' this cute, this changes the button! '''
         item = self.fromList.item(self.fromList.currentRow())
         self.copyButton.setText(f"COPY {item.text()} to -->")
 
     def copy(self):
+        ''' creates new table, drops old one if nessesary '''
         item = self.fromList.item(self.fromList.currentRow())
         listToCopy = item.text()
         tableDetails = self.getTableDetails(listToCopy)
@@ -116,6 +130,7 @@ class Ui(QtWidgets.QMainWindow):
         else: print(f"Table and columns created for {listToCopy}, though the table is empty!")
 
     def copyMore(self, table, data):
+        ''' creates SQLite query and injects '''
         query = f"INSERT into {table} VALUES ({','.join(['?']*len(data[0]))})"
         with toConnection:
             toCursor.executemany(query, data)
@@ -123,10 +138,12 @@ class Ui(QtWidgets.QMainWindow):
         self.loadTo(self.toPlainTextEdit.toPlainText(), False)
         
     def getTableDetails(self, table):
+        ''' I have no clue! '''
         fromCursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='{}'".format(table,))
         return fromCursor.fetchall()
     
     def createTable(self, table, details):
+        ''' Create what?! '''
         self.dropOldTable(table)
         query = f"{details[0][0]}"
         with toConnection:
@@ -134,6 +151,7 @@ class Ui(QtWidgets.QMainWindow):
             except Error: pass
 
     def updateTmpFile(self, file, data):
+        ''' Does stuff to your harddrive! '''
         with open(file, "w") as f:
             f.close()
         with open(file, "a") as f:
@@ -141,6 +159,7 @@ class Ui(QtWidgets.QMainWindow):
             f.close
     
     def dropOldTable(self, table):
+        ''' SQLite injection attack, google it! '''
         with toConnection:
             try: 
                 toConnection.execute('drop table {}'.format(table))
