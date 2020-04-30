@@ -36,7 +36,7 @@ if os.path.exists(tmpFile2) == True:
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):     
         super(Ui, self).__init__()
-        uic.loadUi('/home/plutonergy/Coding/SQLite Copy Table/main.ui', self)
+        uic.loadUi('main.ui', self)
         self.fromPlainTextEdit.textChanged.connect(self.fromDrop)
         self.toPlainTextEdit.textChanged.connect(self.toDrop)
         self.fromList.clicked.connect(self.fromListClicked)
