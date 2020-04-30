@@ -120,14 +120,17 @@ class Ui(QtWidgets.QMainWindow):
     def copy(self):
         ''' creates new table, drops old one if nessesary '''
         item = self.fromList.item(self.fromList.currentRow())
-        listToCopy = item.text()
-        tableDetails = self.getTableDetails(listToCopy)
-        fromCursor.execute('select * from "{}"'.format(listToCopy))
-        fetchData = fromCursor.fetchall()
-        self.createTable(listToCopy, tableDetails)
-        if fetchData != []:
-            self.copyMore(listToCopy, fetchData)
-        else: print(f"Table and columns created for {listToCopy}, though the table is empty!")
+        if item != None:
+            listToCopy = item.text()
+            if listToCopy != None:
+                if len(listToCopy) > 0:
+                    tableDetails = self.getTableDetails(listToCopy)
+                    fromCursor.execute('select * from "{}"'.format(listToCopy))
+                    fetchData = fromCursor.fetchall()
+                    self.createTable(listToCopy, tableDetails)
+                    if fetchData != []:
+                        self.copyMore(listToCopy, fetchData)
+                    else: print(f"Table and columns created for {listToCopy}, though the table is empty!")
 
     def copyMore(self, table, data):
         ''' creates SQLite query and injects '''
