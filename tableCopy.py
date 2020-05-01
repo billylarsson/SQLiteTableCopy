@@ -29,13 +29,15 @@ toTMP = None
 if os.path.exists(tmpFile1) == True:
     with open(tmpFile1) as f:
         thisList = list(f)
-        fromTMP = thisList[0].rstrip("\n")
-        fromTMP = fromTMP.strip()
+        if thisList != []:
+            fromTMP = thisList[0].rstrip("\n")
+            fromTMP = fromTMP.strip()
 if os.path.exists(tmpFile2) == True:
     with open(tmpFile2) as f:
         thisList = list(f)
-        toTMP = thisList[0].rstrip("\n")
-        toTMP = toTMP.strip()
+        if thisList != []:
+            toTMP = thisList[0].rstrip("\n")
+            toTMP = toTMP.strip()
 
 class Ui(QtWidgets.QMainWindow):
     def __init__(self):     
@@ -57,7 +59,6 @@ class Ui(QtWidgets.QMainWindow):
         self.fromPlainTextEdit.clear()
         self.toPlainTextEdit.clear()
 
-    
     def fromDrop(self):
         ''' drag 'n drop local file into QPlainText field and it loads '''
         self.fromPlainTextEdit.textChanged.disconnect()
@@ -67,6 +68,7 @@ class Ui(QtWidgets.QMainWindow):
             self.fromPlainTextEdit.setPlainText(f'"{current}"')
             self.loadFrom(current)
             self.updateTmpFile(tmpFile1, current)
+        else: self.updateTmpFile(tmpFile1, None)
         self.fromPlainTextEdit.textChanged.connect(self.fromDrop)
 
     def toDrop(self):
@@ -78,6 +80,7 @@ class Ui(QtWidgets.QMainWindow):
             self.toPlainTextEdit.setPlainText(f'"{current}"')
             self.updateTmpFile(tmpFile2, current)
             self.loadTo(current)
+        else: self.updateTmpFile(tmpFile2, None)
         self.toPlainTextEdit.textChanged.connect(self.toDrop)
 
     def loadFrom(self, current):
@@ -120,17 +123,16 @@ class Ui(QtWidgets.QMainWindow):
     def copy(self):
         ''' creates new table, drops old one if nessesary '''
         item = self.fromList.item(self.fromList.currentRow())
-        if item != None:
+        if item != None and toCursor != None and fromConnection != None:
             listToCopy = item.text()
-            if listToCopy != None:
-                if len(listToCopy) > 0:
-                    tableDetails = self.getTableDetails(listToCopy)
-                    fromCursor.execute('select * from "{}"'.format(listToCopy))
-                    fetchData = fromCursor.fetchall()
-                    self.createTable(listToCopy, tableDetails)
-                    if fetchData != []:
-                        self.copyMore(listToCopy, fetchData)
-                    else: print(f"Table and columns created for {listToCopy}, though the table is empty!")
+            if len(listToCopy) > 0:
+                tableDetails = self.getTableDetails(listToCopy)
+                fromCursor.execute('select * from "{}"'.format(listToCopy))
+                fetchData = fromCursor.fetchall()
+                self.createTable(listToCopy, tableDetails)
+                if fetchData != []:
+                    self.copyMore(listToCopy, fetchData)
+                else: print(f"Table and columns created for {listToCopy}, though the table is empty!")
 
     def copyMore(self, table, data):
         ''' creates SQLite query and injects '''
@@ -155,11 +157,12 @@ class Ui(QtWidgets.QMainWindow):
 
     def updateTmpFile(self, file, data):
         ''' Does stuff to your harddrive! '''
-        with open(file, "w") as f:
-            f.close()
-        with open(file, "a") as f:
-            f.write(data)
-            f.close
+        if data != None:
+            with open(file, "w") as f:
+                f.close()
+            with open(file, "a") as f:
+                f.write(data)
+                f.close
     
     def dropOldTable(self, table):
         ''' SQLite injection attack, google it! '''
