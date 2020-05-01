@@ -43,6 +43,10 @@ class Ui(QtWidgets.QMainWindow):
     def __init__(self):     
         super(Ui, self).__init__()
         uic.loadUi('main.ui', self)
+        if fromTMP == None:
+            self.fromPlainTextEdit.setPlainText(f'DRAG and DROP file here!' )
+        if toTMP == None:
+            self.toPlainTextEdit.setPlainText(f'DRAG and DROP file here!' )
         self.fromPlainTextEdit.textChanged.connect(self.fromDrop)
         self.toPlainTextEdit.textChanged.connect(self.toDrop)
         self.fromList.clicked.connect(self.fromListClicked)
